@@ -1,0 +1,29 @@
+"on":
+  push:
+    branches:
+    - main
+name: Deploy to quivr-demo-front
+jobs:
+  porter-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Set Github tag
+      id: vars
+      run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+    - name: Setup porter
+      uses: porter-dev/setup-porter@v0.1.0
+    - name: Deploy stack
+      timeout-minutes: 30
+      run: exec porter apply -f ./frontend/Porter.yaml
+      env:
+        PORTER_CLUSTER: "1178"
+        PORTER_DEPLOYMENT_TARGET_ID: 798fe859-9e61-47fa-89b7-978f24073052
+        PORTER_HOST: https://cloud.porter.run
+        PORTER_PR_NUMBER: ${{ github.event.number }}
+        PORTER_PROJECT: "1265"
+        PORTER_REPO_NAME: ${{ github.event.repository.name }}
+        PORTER_STACK_NAME: quivr-demo-front
+        PORTER_TAG: ${{ steps.vars.outputs.sha_short }}
+        PORTER_TOKEN: ${{ secrets.PORTER_STACK_1265_1178 }}
